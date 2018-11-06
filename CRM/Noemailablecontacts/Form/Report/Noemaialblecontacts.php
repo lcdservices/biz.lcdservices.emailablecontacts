@@ -156,25 +156,6 @@ class CRM_Noemailablecontacts_Form_Report_Noemaialblecontacts extends CRM_Report
     $this->_columnHeaders["{$this->_aliases['civicrm_contact']}_sort_name_noemailable_count"]['title'] = 'Un-emailable related contacts';
     $select[] = "GROUP_CONCAT(distinct {$this->_aliases['civicrm_relationship']}.contact_id_a) as {$this->_aliases['civicrm_contact']}_sort_name_emailable_count";
     $select[] = "GROUP_CONCAT(distinct {$this->_aliases['civicrm_relationship']}.contact_id_a) as {$this->_aliases['civicrm_contact']}_sort_name_noemailable_count";
-    if(!empty($this->_params['emailability_value']) ){
-      $emailability_value = $this->_params['emailability_value'];
-      if($this->_params['emailability_op'] == 'in'){
-        if(!in_array(1, $emailability_value)){
-          $this->_columnHeaders["{$this->_aliases['civicrm_contact']}_sort_name_emailable_count"]['no_display'] = TRUE;
-        }
-        if(!in_array(2, $emailability_value) ){
-          $this->_columnHeaders["{$this->_aliases['civicrm_contact']}_sort_name_noemailable_count"]['no_display'] = TRUE;
-        }
-      }
-      else{
-        if(in_array(1, $emailability_value)){
-          $this->_columnHeaders["{$this->_aliases['civicrm_contact']}_sort_name_emailable_count"]['no_display'] = TRUE;
-        }
-        if(in_array(2, $emailability_value) ){
-          $this->_columnHeaders["{$this->_aliases['civicrm_contact']}_sort_name_noemailable_count"]['no_display'] = TRUE;
-        }
-      }
-    }
     $this->_select = "SELECT " . implode(', ', $select) . " ";
   }
 
@@ -374,19 +355,35 @@ class CRM_Noemailablecontacts_Form_Report_Noemaialblecontacts extends CRM_Report
         
         $final_emailable_array = array_unique($email_able_data_array);
         $final_no_emailable_array = array_unique($no_email_able_data_array);
-        $email_related = $no_email_related = '0';
-        if( !empty($final_emailable_array) ){
-          $email_related = count($final_emailable_array) .'('. implode(",",$final_emailable_array). ')';
-        }
-        if( !empty($final_no_emailable_array) ){
-          $no_email_related = count($final_no_emailable_array) .'('. implode(",",$final_no_emailable_array). ')';
-        }
-        $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_emailable_count"] = $email_related;
-        $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_noemailable_count"] = $no_email_related;
+        $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_emailable_count"] = count($final_emailable_array);
+        $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_noemailable_count"] = count($final_no_emailable_array);
       }
       else{
         $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_emailable_count"] = '0';
         $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_noemailable_count"] = '0';
+      }
+      
+      
+      $emailable_count = $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_emailable_count"];
+      $unemailable_count = $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_noemailable_count"];
+      if(!empty($this->_params['emailability_value']) ){
+        $emailability_value = $this->_params['emailability_value'];
+        if($this->_params['emailability_op'] == 'in'){
+          if(!in_array(1, $emailability_value) && $unemailable_count == 0){
+            unset($rows[$rowNum]);
+          }
+          if(!in_array(2, $emailability_value) && $emailable_count == 0){
+             unset($rows[$rowNum]);
+          }
+        }
+        else{
+          if(in_array(1, $emailability_value)&& $unemailable_count == 0){
+            unset($rows[$rowNum]);
+          }
+          if(in_array(2, $emailability_value) && $emailable_count == 0){
+             unset($rows[$rowNum]);
+          }
+        }
       }
       if (!$entryFound) {
         break;
