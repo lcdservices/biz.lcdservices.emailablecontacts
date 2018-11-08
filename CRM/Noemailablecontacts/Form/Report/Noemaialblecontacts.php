@@ -8,6 +8,8 @@ class CRM_Noemailablecontacts_Form_Report_Noemaialblecontacts extends CRM_Report
   protected $_emailField = FALSE;
 
   protected $_summary = NULL;
+  
+  protected $_newRowCount = NULL;
 
   protected $_customGroupExtends = array('Membership');
   protected $_customGroupGroupBy = FALSE; function __construct() {
@@ -166,23 +168,18 @@ class CRM_Noemailablecontacts_Form_Report_Noemaialblecontacts extends CRM_Report
          FROM  civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}
                 LEFT JOIN civicrm_relationship {$this->_aliases['civicrm_relationship']}
                           ON {$this->_aliases['civicrm_contact']}.id =
-                             {$this->_aliases['civicrm_relationship']}.contact_id_b 
-                LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']}
-                          ON {$this->_aliases['civicrm_relationship']}.contact_id_a =
-                             {$this->_aliases['civicrm_email']}.contact_id
+                             {$this->_aliases['civicrm_relationship']}.contact_id_b
                 LEFT JOIN civicrm_contact cc2
                           ON {$this->_aliases['civicrm_relationship']}.contact_id_a =
                              cc2.id";
 
 
-    //used when address field is selected
-    if ($this->_addressField) {
-      $this->_from .= "
+    //address field
+    $this->_from .= "
              LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
                        ON {$this->_aliases['civicrm_contact']}.id =
                           {$this->_aliases['civicrm_address']}.contact_id AND
                           {$this->_aliases['civicrm_address']}.is_primary = 1\n";
-    }
     //used when email field is selected
     if ($this->_emailField) {
       $this->_from .= "
@@ -353,10 +350,12 @@ class CRM_Noemailablecontacts_Form_Report_Noemaialblecontacts extends CRM_Report
           }
         }
         
-        $final_emailable_array = array_unique($email_able_data_array);
-        $final_no_emailable_array = array_unique($no_email_able_data_array);
-        $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_emailable_count"] = count($final_emailable_array);
-        $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_noemailable_count"] = count($final_no_emailable_array);
+        $final_emailable_array = count(array_unique($email_able_data_array));
+        $final_no_emailable_array = count(array_unique($no_email_able_data_array));
+        if($final_emailable_array == 0) $final_emailable_array = '0';
+        if($final_no_emailable_array == 0) $final_no_emailable_array = '0';
+        $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_emailable_count"] = $final_emailable_array;
+        $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_noemailable_count"] = $final_no_emailable_array;
       }
       else{
         $rows[$rowNum]["{$this->_aliases['civicrm_contact']}_sort_name_emailable_count"] = '0';
@@ -388,7 +387,20 @@ class CRM_Noemailablecontacts_Form_Report_Noemaialblecontacts extends CRM_Report
       if (!$entryFound) {
         break;
       }
+      $this->_newRowCount = count($rows);
     }
+  }
+  /**
+   * @param $rows
+   *
+   * @return array
+   */
+  public function statistics(&$rows) {
+    $statistics = parent::statistics($rows);
+    if($statistics['counts']['rowsFound']){
+      $statistics['counts']['rowsFound']['value'] = $this->_newRowCount;
+    }
+    return $statistics;
   }
 
 }
