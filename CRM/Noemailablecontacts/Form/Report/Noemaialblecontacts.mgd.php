@@ -6,16 +6,16 @@
 return array (
   0 => 
   array (
-    'name' => 'CRM_Noemailablecontacts_Form_Report_Noemaialblecontacts',
+    'name' => 'CRM_Noemailablecontacts_Form_Report_Noemailablecontacts',
     'entity' => 'ReportTemplate',
     'params' => 
     array (
       'version' => 3,
-      'label' => 'Noemaialblecontacts',
-      'description' => 'Noemaialblecontacts (biz.lcdservices.noemailablecontacts)',
-      'class_name' => 'CRM_Noemailablecontacts_Form_Report_Noemaialblecontacts',
-      'report_url' => 'biz.lcdservices.noemailablecontacts/noemaialblecontacts',
-      'component' => '',
+      'label' => 'Emailable Contacts',
+      'description' => 'Report template to generate list of emailable/non-emailable contacts by organizations.',
+      'class_name' => 'CRM_Noemailablecontacts_Form_Report_Noemailablecontacts',
+      'report_url' => 'biz.lcdservices.noemailablecontacts/noemailablecontacts',
+      'component' => 'Contact',
     ),
   ),
 );
