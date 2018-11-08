@@ -277,6 +277,7 @@ class CRM_Noemailablecontacts_Form_Report_Noemailablecontacts extends CRM_Report
           }
         }
       }
+
       if (array_key_exists('civicrm_address_state_province_id', $row)) {
         if ($value = $row['civicrm_address_state_province_id']) {
           $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince($value, FALSE);
